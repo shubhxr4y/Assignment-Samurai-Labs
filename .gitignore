@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# builds
+dist/
+.next/
+out/
+build/
+
+# environment — never commit real credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# editors / os
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# misc
+coverage/
+*.tsbuildinfo
+next-env.d.ts
+seed.sql
+
+# the assignment brief itself is not project source
+Samurai_Labs_Technical_and_Product_Design_Assignment.pdf

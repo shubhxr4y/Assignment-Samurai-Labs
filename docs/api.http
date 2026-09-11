@@ -1,0 +1,147 @@
+### Bahi API collection
+### Works with the VS Code "REST Client" extension, or as a reference for curl.
+### Set @baseUrl to wherever the API is running.
+
+@baseUrl = http://localhost:4000/api
+@customerId = replace-with-a-real-uuid
+@itemId = replace-with-a-real-uuid
+@invoiceId = replace-with-a-real-uuid
+
+### Health check
+GET {{baseUrl}}/health
+
+### ---------------------------------------------------------------- Customers
+
+### List customers (search / filter / sort all optional)
+GET {{baseUrl}}/customers?status=active&sort=total_sales&order=desc&search=
+
+### One customer, with their sales roll-up
+GET {{baseUrl}}/customers/{{customerId}}
+
+### Create a customer
+POST {{baseUrl}}/customers
+Content-Type: application/json
+
+{
+  "name": "Sharma Traders",
+  "email": "accounts@sharmatraders.in",
+  "phone": "+91 98300 41125",
+  "address": "14/2 Burrabazar, Kolkata, West Bengal 700007",
+  "gstin": "19AABCS1429B1Z8",
+  "status": "active"
+}
+
+### Update a customer (partial update is fine)
+PUT {{baseUrl}}/customers/{{customerId}}
+Content-Type: application/json
+
+{ "status": "inactive" }
+
+### Delete a customer — 409 if they have invoices
+DELETE {{baseUrl}}/customers/{{customerId}}
+
+### -------------------------------------------------------------------- Items
+
+### List items
+GET {{baseUrl}}/items?status=active&sort=name&order=asc
+
+### One item
+GET {{baseUrl}}/items/{{itemId}}
+
+### Sales history for one item — every invoice line it has appeared on
+GET {{baseUrl}}/items/{{itemId}}/invoices
+
+### Create an item
+POST {{baseUrl}}/items
+Content-Type: application/json
+
+{
+  "name": "Copper Wire 2.5 sq mm — 90 m coil",
+  "description": "FR PVC insulated, ISI marked",
+  "unit": "coil",
+  "unit_price": "3150.00",
+  "tax_rate": "18",
+  "status": "active"
+}
+
+### Update an item
+PUT {{baseUrl}}/items/{{itemId}}
+Content-Type: application/json
+
+{ "unit_price": "3299.00" }
+
+### Delete an item — 409 if it appears on any invoice
+DELETE {{baseUrl}}/items/{{itemId}}
+
+### ----------------------------------------------------------------- Invoices
+
+### List invoices
+GET {{baseUrl}}/invoices?status=all&sort=invoice_date&order=desc
+
+### Only what is still owed, newest first
+GET {{baseUrl}}/invoices?status=partially_paid&sort=amount_pending&order=desc
+
+### Next number in the current financial-year series
+GET {{baseUrl}}/invoices/next-number
+
+### One invoice, with its line items and customer details
+GET {{baseUrl}}/invoices/{{invoiceId}}
+
+### Create an invoice
+### Amounts are never sent by the client: quantities, prices and rates are,
+### and the server computes every total.
+POST {{baseUrl}}/invoices
+Content-Type: application/json
+
+{
+  "invoice_number": null,
+  "customer_id": "{{customerId}}",
+  "invoice_date": "2026-09-11",
+  "notes": "Delivery by 20 September.",
+  "amount_paid": "0",
+  "items": [
+    { "item_id": "{{itemId}}", "quantity": "40" },
+    { "item_id": "{{itemId}}", "quantity": "2.5", "unit_price": "3000.00", "tax_rate": "12" }
+  ]
+}
+
+### Replace an invoice (lines are replaced wholesale, totals recalculated)
+PUT {{baseUrl}}/invoices/{{invoiceId}}
+Content-Type: application/json
+
+{
+  "invoice_number": "INV-2026-27-0001",
+  "customer_id": "{{customerId}}",
+  "invoice_date": "2026-09-11",
+  "amount_paid": "50000",
+  "items": [{ "item_id": "{{itemId}}", "quantity": "10" }]
+}
+
+### Record a payment — absolute amount received so far, not a delta
+PATCH {{baseUrl}}/invoices/{{invoiceId}}/payment
+Content-Type: application/json
+
+{ "amount_paid": "125000.00" }
+
+### Mark an invoice paid in full
+PATCH {{baseUrl}}/invoices/{{invoiceId}}/payment
+Content-Type: application/json
+
+{ "mark_as": "paid" }
+
+### Delete an invoice
+DELETE {{baseUrl}}/invoices/{{invoiceId}}
+
+### ------------------------------------------------------ Dashboard & reports
+
+### Everything the dashboard needs, in one request
+GET {{baseUrl}}/dashboard
+
+### Customer-wise sales
+GET {{baseUrl}}/reports/customer-sales
+
+### Item-wise sales
+GET {{baseUrl}}/reports/item-sales
+
+### Pending payments
+GET {{baseUrl}}/reports/pending-payments
