@@ -25,8 +25,8 @@ export const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      '-mb-px border-b-2 border-transparent px-3 py-2 text-body font-medium text-ink-muted transition-colors',
-      'hover:text-ink data-[state=active]:border-brand-600 data-[state=active]:text-ink',
+      '-mb-px border-b-2 border-transparent px-3.5 py-2 text-body font-medium text-ink-muted transition-all duration-200',
+      'hover:text-ink data-[state=active]:border-brand-600 data-[state=active]:text-brand-700 data-[state=active]:font-semibold',
       className,
     )}
     {...props}
@@ -34,4 +34,14 @@ export const TabsTrigger = React.forwardRef<
 ));
 TabsTrigger.displayName = 'TabsTrigger';
 
-export const TabsContent = TabsPrimitive.Content;
+export const TabsContent = React.forwardRef<
+  React.ElementRef<typeof TabsPrimitive.Content>,
+  React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
+>(({ className, ...props }, ref) => (
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn('animate-fade-in-up focus-visible:outline-none', className)}
+    {...props}
+  />
+));
+TabsContent.displayName = 'TabsContent';

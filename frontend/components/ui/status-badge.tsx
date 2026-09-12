@@ -21,12 +21,17 @@ export function PaymentBadge({
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2 py-0.5 text-small font-medium',
+        'inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-small font-medium transition-all duration-200',
         style.className,
         className,
       )}
     >
-      <span className="size-1.5 rounded-full bg-current opacity-70" aria-hidden />
+      <span className="relative flex size-2 items-center justify-center" aria-hidden>
+        {status !== 'paid' ? (
+          <span className="absolute inline-flex size-full animate-ping rounded-full bg-current opacity-40" />
+        ) : null}
+        <span className="relative inline-flex size-1.5 rounded-full bg-current opacity-90" />
+      </span>
       {style.label}
     </span>
   );

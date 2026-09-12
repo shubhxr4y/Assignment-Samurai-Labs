@@ -14,7 +14,7 @@ export const DialogContent = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & { size?: 'md' | 'lg' | 'xl' }
 >(({ className, children, size = 'md', ...props }, ref) => (
   <DialogPrimitive.Portal>
-    <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade-in bg-ink/25 backdrop-blur-[1px]" />
+    <DialogPrimitive.Overlay className="fixed inset-0 z-50 animate-fade-in bg-ink/30 backdrop-blur-sm" />
     <DialogPrimitive.Content
       ref={ref}
       className={cn(
@@ -29,7 +29,7 @@ export const DialogContent = React.forwardRef<
     >
       {children}
       <DialogPrimitive.Close
-        className="absolute right-4 top-4 rounded p-1 text-ink-subtle transition-colors hover:bg-line/50 hover:text-ink"
+        className="absolute right-4 top-4 rounded-md p-1.5 text-ink-subtle transition-all duration-150 hover:bg-line/50 hover:text-ink active:scale-95"
         aria-label="Close"
       >
         <X className="size-4" />

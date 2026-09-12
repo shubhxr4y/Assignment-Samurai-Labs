@@ -12,12 +12,19 @@ const MONTH_LABEL = new Intl.DateTimeFormat('en-IN', { month: 'short' });
  * justify 40 kB of JavaScript, and this way it inherits the design tokens.
  */
 export function SalesChart({ data }: { data: MonthlySalesRow[] }) {
+  const [mounted, setMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 60);
+    return () => clearTimeout(timer);
+  }, []);
+
   const max = Math.max(...data.map((row) => Number(row.total_sales)), 1);
 
   return (
     <div>
       <div className="flex items-end gap-3 sm:gap-5" style={{ height: 168 }}>
-        {data.map((row) => {
+        {data.map((row, idx) => {
           const total = Number(row.total_sales);
           const collected = Number(row.total_collected);
           const totalHeight = Math.max((total / max) * 140, total > 0 ? 4 : 2);
@@ -25,22 +32,33 @@ export function SalesChart({ data }: { data: MonthlySalesRow[] }) {
           const [year, month] = row.month.split('-');
           const label = MONTH_LABEL.format(new Date(Number(year), Number(month) - 1, 1));
 
+          const currentTotalHeight = mounted ? totalHeight : 4;
+          const currentCollectedHeight = mounted ? collectedHeight : 0;
+
           return (
-            <div key={row.month} className="flex flex-1 flex-col items-center justify-end gap-2">
-              <span className="tabular text-small text-ink-muted">
+            <div key={row.month} className="group flex flex-1 flex-col items-center justify-end gap-2">
+              <span className="tabular text-small text-ink-muted transition-opacity duration-300 group-hover:text-ink font-medium">
                 {total > 0 ? formatINRCompact(total) : '—'}
               </span>
               <div
-                className="relative w-full max-w-14 rounded-t bg-brand-100"
-                style={{ height: totalHeight }}
+                className="relative w-full max-w-14 overflow-hidden rounded-t-md bg-brand-100 transition-all duration-700 ease-out group-hover:bg-brand-200/80"
+                style={{
+                  height: currentTotalHeight,
+                  transitionDelay: `${idx * 75}ms`,
+                }}
                 title={`${label}: invoiced ${formatINR(total)}, received ${formatINR(collected)}`}
               >
                 <div
-                  className="absolute inset-x-0 bottom-0 rounded-t bg-brand-600"
-                  style={{ height: collectedHeight }}
+                  className="absolute inset-x-0 bottom-0 rounded-t bg-gradient-to-t from-brand-700 to-brand-600 transition-all duration-700 ease-out"
+                  style={{
+                    height: currentCollectedHeight,
+                    transitionDelay: `${idx * 75 + 100}ms`,
+                  }}
                 />
               </div>
-              <span className="text-small text-ink-subtle">{label}</span>
+              <span className="text-small text-ink-subtle transition-colors duration-200 group-hover:text-ink font-medium">
+                {label}
+              </span>
             </div>
           );
         })}

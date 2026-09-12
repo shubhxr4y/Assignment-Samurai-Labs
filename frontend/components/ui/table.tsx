@@ -30,7 +30,11 @@ export function TR({
 }: React.HTMLAttributes<HTMLTableRowElement> & { interactive?: boolean }) {
   return (
     <tr
-      className={cn(interactive && 'cursor-pointer transition-colors hover:bg-paper', className)}
+      className={cn(
+        interactive &&
+          'group cursor-pointer transition-all duration-150 hover:bg-brand-50/40 hover:shadow-[inset_2px_0_0_0_theme(colors.brand.500)]',
+        className,
+      )}
       {...props}
     />
   );

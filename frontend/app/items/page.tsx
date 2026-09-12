@@ -103,7 +103,7 @@ export default function ItemsPage() {
         }
       />
 
-      <Card>
+      <Card className="animate-fade-in-up">
         <Toolbar>
           <SearchInput
             value={search}

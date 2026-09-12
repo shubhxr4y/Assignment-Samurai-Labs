@@ -84,7 +84,7 @@ export default function InvoicesPage() {
         }
       />
 
-      <Card>
+      <Card className="animate-fade-in-up">
         <Toolbar>
           <SearchInput
             value={search}

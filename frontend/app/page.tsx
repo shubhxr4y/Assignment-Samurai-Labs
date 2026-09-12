@@ -53,6 +53,7 @@ export default function DashboardPage() {
           label="Total sales"
           value={summary?.total_sales}
           loading={isLoading}
+          className="animate-fade-in-up animate-delay-50"
           hint={
             summary ? `Across ${summary.invoice_count} invoice${summary.invoice_count === 1 ? '' : 's'}` : undefined
           }
@@ -62,6 +63,7 @@ export default function DashboardPage() {
           value={summary?.total_collected}
           tone="positive"
           loading={isLoading}
+          className="animate-fade-in-up animate-delay-100"
           hint={summary ? `${summary.paid_count} invoices settled in full` : undefined}
         />
         <StatTile
@@ -70,6 +72,7 @@ export default function DashboardPage() {
           tone="attention"
           loading={isLoading}
           href="/reports?view=pending"
+          className="animate-fade-in-up animate-delay-150"
           hint={
             summary
               ? `${summary.pending_count + summary.partially_paid_count} invoices awaiting payment`
@@ -82,12 +85,13 @@ export default function DashboardPage() {
           format="count"
           loading={isLoading}
           href="/customers"
+          className="animate-fade-in-up animate-delay-200"
           hint={summary ? `${summary.item_count} items in your catalogue` : undefined}
         />
       </div>
 
       {!isLoading && !hasInvoices ? (
-        <Card className="mt-5">
+        <Card className="mt-5 animate-fade-in-up">
           <EmptyState
             icon={FileText}
             title="Your books are empty"
@@ -110,7 +114,7 @@ export default function DashboardPage() {
       ) : null}
 
       <div className="mt-5 grid gap-5 lg:grid-cols-3">
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 animate-fade-in-up animate-delay-200">
           <CardHeader
             title="Sales over the last six months"
             description="Invoiced value, with the part you have actually received filled in."
@@ -124,7 +128,7 @@ export default function DashboardPage() {
           </CardBody>
         </Card>
 
-        <Card>
+        <Card className="animate-fade-in-up animate-delay-300">
           <CardHeader
             title="Who owes you"
             description="Largest amounts still pending."
@@ -155,15 +159,15 @@ export default function DashboardPage() {
                 <li key={row.invoice_id}>
                   <Link
                     href={`/invoices/${row.invoice_id}`}
-                    className="flex items-center justify-between gap-3 px-5 py-3 transition-colors hover:bg-paper"
+                    className="group flex items-center justify-between gap-3 px-5 py-3 transition-all duration-150 hover:bg-brand-50/40 hover:pl-6"
                   >
                     <span className="min-w-0">
-                      <span className="block truncate font-medium text-ink">{row.customer_name}</span>
+                      <span className="block truncate font-medium text-ink transition-colors group-hover:text-brand-700">{row.customer_name}</span>
                       <span className="block truncate text-small text-ink-subtle">
                         {row.invoice_number} · {formatAge(row.days_outstanding)} old
                       </span>
                     </span>
-                    <Amount value={row.amount_pending} strong className="text-partial-fg" />
+                    <Amount value={row.amount_pending} strong className="text-partial-fg transition-transform group-hover:scale-105" />
                   </Link>
                 </li>
               ))}
@@ -171,7 +175,7 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card className="lg:col-span-2">
+        <Card className="lg:col-span-2 animate-fade-in-up animate-delay-300">
           <CardHeader
             title="Recent invoices"
             action={
@@ -212,7 +216,7 @@ export default function DashboardPage() {
                   {data?.recentInvoices.map((invoice) => (
                     <TR key={invoice.id} interactive>
                       <TD className="font-medium">
-                        <Link href={`/invoices/${invoice.id}`} className="hover:text-brand-600">
+                        <Link href={`/invoices/${invoice.id}`} className="hover:text-brand-600 transition-colors">
                           {invoice.invoice_number}
                         </Link>
                       </TD>
@@ -237,7 +241,7 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card>
+        <Card className="animate-fade-in-up animate-delay-400">
           <CardHeader title="Top customers" description="By value invoiced." />
           {isLoading ? (
             <CardBody className="space-y-4">
@@ -257,19 +261,19 @@ export default function DashboardPage() {
                 const width =
                   topCustomerPeak > 0 ? (Number(row.total_sales) / topCustomerPeak) * 100 : 0;
                 return (
-                  <div key={row.customer_id}>
+                  <div key={row.customer_id} className="group">
                     <div className="flex items-baseline justify-between gap-3">
                       <Link
                         href={`/customers/${row.customer_id}`}
-                        className="truncate text-body font-medium text-ink hover:text-brand-600"
+                        className="truncate text-body font-medium text-ink hover:text-brand-600 transition-colors"
                       >
                         {row.customer_name}
                       </Link>
-                      <Amount value={row.total_sales} className="text-small" />
+                      <Amount value={row.total_sales} className="text-small font-medium" />
                     </div>
                     <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-line/70">
                       <div
-                        className="h-full rounded-full bg-brand-500"
+                        className="h-full rounded-full bg-brand-500 transition-all duration-700 ease-out group-hover:bg-brand-600"
                         style={{ width: `${Math.max(width, 2)}%` }}
                       />
                     </div>
@@ -280,7 +284,7 @@ export default function DashboardPage() {
           )}
         </Card>
 
-        <Card className="lg:col-span-3">
+        <Card className="lg:col-span-3 animate-fade-in-up animate-delay-400">
           <CardHeader
             title="Best-selling items"
             description="What is actually moving, by value."

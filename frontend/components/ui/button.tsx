@@ -7,16 +7,18 @@ import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded font-medium transition-colors duration-100 disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded font-medium transition-all duration-150 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0',
   {
     variants: {
       variant: {
-        primary: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-900',
+        primary:
+          'bg-brand-600 text-white shadow-sm hover:bg-brand-700 hover:shadow active:bg-brand-900',
         secondary:
-          'border border-line-strong bg-surface text-ink hover:bg-paper active:bg-line/40',
+          'border border-line-strong bg-surface text-ink shadow-sm hover:bg-paper hover:border-ink/20 active:bg-line/40',
         ghost: 'text-ink-muted hover:bg-line/40 hover:text-ink',
-        danger: 'border border-danger-border bg-surface text-danger-fg hover:bg-danger-bg',
-        link: 'text-brand-600 underline-offset-4 hover:underline',
+        danger:
+          'border border-danger-border bg-surface text-danger-fg shadow-sm hover:bg-danger-bg hover:border-danger-fg/30',
+        link: 'text-brand-600 underline-offset-4 hover:underline active:scale-100',
       },
       size: {
         sm: 'h-8 px-3 text-small [&_svg]:size-3.5',

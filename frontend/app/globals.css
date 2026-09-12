@@ -58,6 +58,45 @@
       transform: translateX(100%);
     }
   }
+
+  /* Staggered animation utilities */
+  .animate-delay-50 {
+    animation-delay: 50ms;
+    animation-fill-mode: backwards;
+  }
+  .animate-delay-100 {
+    animation-delay: 100ms;
+    animation-fill-mode: backwards;
+  }
+  .animate-delay-150 {
+    animation-delay: 150ms;
+    animation-fill-mode: backwards;
+  }
+  .animate-delay-200 {
+    animation-delay: 200ms;
+    animation-fill-mode: backwards;
+  }
+  .animate-delay-300 {
+    animation-delay: 300ms;
+    animation-fill-mode: backwards;
+  }
+  .animate-delay-400 {
+    animation-delay: 400ms;
+    animation-fill-mode: backwards;
+  }
+
+  .animate-fill-backwards {
+    animation-fill-mode: backwards;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* The invoice document prints as a document, not as an app screenshot. */

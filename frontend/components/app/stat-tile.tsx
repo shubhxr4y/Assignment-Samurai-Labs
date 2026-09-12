@@ -13,6 +13,7 @@ export function StatTile({
   href,
   loading,
   format = 'currency',
+  className: propClassName,
 }: {
   label: string;
   value: string | number | null | undefined;
@@ -22,13 +23,14 @@ export function StatTile({
   loading?: boolean;
   /** Rupee figures by default; `count` for plain totals like "8 customers". */
   format?: 'currency' | 'count';
+  className?: string;
 }) {
   const body = (
     <>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-label uppercase text-ink-subtle">{label}</p>
+        <p className="text-label uppercase tracking-wider text-ink-subtle">{label}</p>
         {href ? (
-          <ArrowUpRight className="size-3.5 text-ink-subtle transition-colors group-hover:text-brand-600" />
+          <ArrowUpRight className="size-4 text-ink-subtle transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-brand-600" />
         ) : null}
       </div>
       {loading ? (
@@ -36,7 +38,7 @@ export function StatTile({
       ) : (
         <p
           className={cn(
-            'tabular mt-2 text-figure font-semibold',
+            'tabular mt-2 text-figure font-semibold tracking-tight transition-transform duration-200 group-hover:translate-x-0.5',
             tone === 'attention' && 'text-partial-fg',
             tone === 'positive' && 'text-paid-fg',
             tone === 'neutral' && 'text-ink',
@@ -50,8 +52,13 @@ export function StatTile({
   );
 
   const className = cn(
-    'block rounded-lg border border-line bg-surface p-5 shadow-card transition-colors',
-    href && 'group hover:border-line-strong',
+    'relative block rounded-lg border border-line bg-surface p-5 shadow-card transition-all duration-300',
+    'hover:-translate-y-1 hover:shadow-md hover:border-line-strong',
+    tone === 'positive' && 'hover:border-paid-border/80',
+    tone === 'attention' && 'hover:border-partial-border/80',
+    tone === 'neutral' && 'hover:border-brand-200',
+    href && 'group',
+    propClassName,
   );
 
   return href ? (

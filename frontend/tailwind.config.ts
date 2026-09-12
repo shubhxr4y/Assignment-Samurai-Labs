@@ -70,15 +70,30 @@ const config: Config = {
       },
       keyframes: {
         'fade-in': { from: { opacity: '0' }, to: { opacity: '1' } },
+        'fade-in-up': {
+          from: { opacity: '0', transform: 'translateY(8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
+        'fade-in-down': {
+          from: { opacity: '0', transform: 'translateY(-8px)' },
+          to: { opacity: '1', transform: 'translateY(0)' },
+        },
         'scale-in': {
-          from: { opacity: '0', transform: 'translateY(4px) scale(0.99)' },
+          from: { opacity: '0', transform: 'translateY(4px) scale(0.98)' },
           to: { opacity: '1', transform: 'translateY(0) scale(1)' },
+        },
+        'pulse-soft': {
+          '0%, 100%': { opacity: '1', transform: 'scale(1)' },
+          '50%': { opacity: '0.45', transform: 'scale(0.92)' },
         },
         shimmer: { '100%': { transform: 'translateX(100%)' } },
       },
       animation: {
-        'fade-in': 'fade-in 120ms ease-out',
-        'scale-in': 'scale-in 140ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'fade-in': 'fade-in 200ms ease-out',
+        'fade-in-up': 'fade-in-up 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'fade-in-down': 'fade-in-down 300ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'scale-in': 'scale-in 200ms cubic-bezier(0.16, 1, 0.3, 1)',
+        'pulse-soft': 'pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
     },
   },
