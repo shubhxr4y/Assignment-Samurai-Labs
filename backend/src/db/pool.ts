@@ -10,11 +10,20 @@ types.setTypeParser(types.builtins.NUMERIC, (value) => value);
 // DATE as a plain 'YYYY-MM-DD' string: an invoice date has no timezone.
 types.setTypeParser(types.builtins.DATE, (value) => value);
 
+/**
+ * A long-running server multiplexes one pool across every request, so a
+ * handful of connections is right. A serverless host runs many isolated
+ * instances instead, each with its own pool — so each takes a single
+ * connection and lets Supabase's transaction pooler do the multiplexing.
+ * Ten per instance would exhaust the database's connection limit under load.
+ */
+const isServerless = Boolean(process.env.VERCEL);
+
 export const pool = new Pool({
   connectionString: env.DATABASE_URL,
   ssl: env.DATABASE_SSL ? { rejectUnauthorized: false } : undefined,
-  max: 10,
-  idleTimeoutMillis: 30_000,
+  max: isServerless ? 1 : 10,
+  idleTimeoutMillis: isServerless ? 10_000 : 30_000,
   connectionTimeoutMillis: 10_000,
 });
 

@@ -20,7 +20,13 @@ const parsed = envSchema.safeParse(process.env);
 
 if (!parsed.success) {
   const issues = parsed.error.issues.map((i) => `  - ${i.path.join('.')}: ${i.message}`);
-  console.error(`\nInvalid environment configuration:\n${issues.join('\n')}\n`);
+  const message = `Invalid environment configuration:\n${issues.join('\n')}`;
+
+  // On a serverless host, process.exit() during module initialisation kills the
+  // invocation with no usable message. Throwing puts the reason in the logs.
+  if (process.env.VERCEL) throw new Error(message);
+
+  console.error(`\n${message}\n`);
   console.error('Copy .env.example to .env and fill in the values.\n');
   process.exit(1);
 }
