@@ -662,4 +662,4 @@ In rough priority order.
 
 ---
 
-*Built by Sidharth for the Samurai Labs Full-Stack Product Engineer assignment.*
+*Built by Shubhom for the Samurai Labs Full-Stack Product Engineer assignment.*
