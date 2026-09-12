@@ -56,44 +56,37 @@ paid** or **Paid**, derived from the amount received rather than set by hand.
 
 ## Tech stack
 
-**Frontend** — Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS,
+**Full-Stack** — Next.js 15 (App Router), React 19, TypeScript, Tailwind CSS,
 Radix UI primitives, React Hook Form + Zod, SWR.
 
-**Backend** — Node.js, Express, TypeScript, `pg`, Zod.
-
-**Database** — PostgreSQL (Supabase-compatible; Supabase is used purely as the Postgres
-host, no Supabase SDK, Auth or Storage).
+**Database & Backend** — Node.js, Next.js Serverless API Route Handlers, `pg`, Zod.
+PostgreSQL (Supabase-compatible; Supabase is used purely as the Postgres host, no Supabase SDK, Auth or Storage).
 
 No ORM. The queries here are simple enough that hand-written SQL is clearer than a schema
-DSL, and it keeps the data model visible in one file.
+DSL, and it keeps the data model visible in one place.
 
 ---
 
 ## Architecture
 
 ```
-┌────────────────────┐   REST over HTTP    ┌────────────────────┐        ┌────────────┐
-│  Next.js frontend  │ ──────────────────▶ │   Express API      │ ─────▶ │ PostgreSQL │
-│  (browser)         │ ◀────────────────── │   (Node.js)        │ ◀───── │ (Supabase) │
-└────────────────────┘   JSON envelope     └────────────────────┘   pg   └────────────┘
+┌────────────────────────────────────────────────────────┐
+│               Next.js Unified Full-Stack                │
+│                                                        │
+│  Browser UI (React 19)   ───▶   API Routes (/api/...)  │
+│  (Next.js App Router)    ◀───   (Serverless Functions) │
+└───────────────────────────────────────────┬────────────┘
+                                            │ pg
+                                            ▼
+                                  ┌────────────────────┐
+                                  │ PostgreSQL Database│
+                                  │ (Supabase Hosted)  │
+                                  └────────────────────┘
 ```
 
-The browser talks only to the REST API. It never holds a database credential — the only
-variable it receives is `NEXT_PUBLIC_API_URL`.
+The browser and API live in the same unified project. When deployed on Vercel, requests to `/api` run as serverless functions on the same domain with **zero CORS configuration** and **single-click deployment**.
 
-Inside the API, each request moves through one direction only:
-
-```
-route → validator (Zod) → controller → service (business rules) → repository (SQL) → pg
-```
-
-- **Controllers** unwrap the request and shape the response. No logic.
-- **Services** own the rules: pricing, totals, payment limits, deletion policy.
-- **Repositories** own SQL. Nothing else in the codebase writes a query.
-- **Middleware** handles validation, async errors, and translating Postgres errors into
-  sentences a business owner can read.
-
-Every response uses one envelope, so the client has exactly one shape to unwrap:
+Every API response uses one envelope, so the client has exactly one shape to unwrap:
 
 ```jsonc
 { "success": true,  "data": … , "meta": { "total": 14 } }
@@ -106,118 +99,102 @@ Every response uses one envelope, so the client has exactly one shape to unwrap:
 
 ```
 .
-├── backend/
-│   ├── src/
-│   │   ├── config/env.ts             # parsed + validated once, fails loudly at boot
-│   │   ├── controllers/              # request in, response out
-│   │   ├── db/
-│   │   │   ├── migrations/001_init.sql
-│   │   │   ├── migrate.ts            # forward-only runner, tracked in schema_migrations
-│   │   │   ├── pool.ts               # pool, query helpers, withTransaction
-│   │   │   ├── seed.ts               # seeds via the API's own money helpers
-│   │   │   ├── seed-sql.ts           # same seed, emitted as plain SQL
-│   │   │   └── seed-data.ts          # the data itself
-│   │   ├── middleware/               # validate, async-handler, error-handler
-│   │   ├── repositories/             # all SQL lives here
-│   │   ├── routes/
-│   │   ├── services/                 # business rules
-│   │   ├── types/domain.ts
-│   │   ├── utils/                    # money.ts, invoice-number.ts, api-error.ts …
-│   │   ├── app.ts
-│   │   └── server.ts
-│   └── .env.example
+├── app/                              # Next.js App Router (UI + API)
+│   ├── api/                          # REST API route handlers
+│   │   ├── customers/
+│   │   ├── invoices/
+│   │   ├── items/
+│   │   ├── reports/
+│   │   ├── dashboard/
+│   │   └── health/
+│   ├── customers/…                   # Customer list + detail
+│   ├── items/…                       # Item list + detail
+│   ├── invoices/…                    # Invoice list, new, detail, edit
+│   ├── reports/                      # Reports views
+│   ├── globals.css                   # Global styles & animation tokens
+│   ├── layout.tsx                    # Root layout
+│   └── page.tsx                      # Dashboard
 │
-├── frontend/
-│   ├── app/                          # App Router pages
-│   │   ├── page.tsx                  # dashboard
-│   │   ├── customers/…               # list + detail
-│   │   ├── items/…                   # list + detail
-│   │   ├── invoices/…                # list, new, detail, edit
-│   │   └── reports/
-│   ├── components/
-│   │   ├── ui/                       # the design system primitives
-│   │   └── app/                      # product components (shell, forms, chart, tiles)
-│   ├── hooks/                        # SWR data hooks
-│   ├── lib/                          # api client, formatting, money preview
-│   ├── services/                     # typed endpoint wrappers
-│   ├── types/api.ts
-│   ├── tailwind.config.ts            # the design tokens
-│   └── .env.example
+├── components/                       # UI primitives & app components
+│   ├── app/                          # App shell, sidebar, invoice forms, chart
+│   └── ui/                           # Button, card, dialog, table, badges
 │
-└── docs/
-    ├── api.http                      # API collection (VS Code REST Client)
-    ├── design.md                     # screenshots + design decisions
-    └── screenshots/                  # every screen, 1440 px, from the production build
+├── lib/
+│   ├── api.ts                        # SWR and API client
+│   ├── format.ts, money.ts           # Formatters and calculators
+│   └── server/                       # Backend logic
+│       ├── db/pool.ts                # Database connection pool
+│       ├── repositories/             # SQL query layer
+│       ├── services/                 # Business logic & validations
+│       ├── validators/               # Zod input schemas
+│       └── utils/                    # Money precision & numbering helpers
+│
+├── scripts/                          # Database migrations & seeds
+│   ├── migrate.ts                    # Forward-only migration runner
+│   ├── seed.ts                       # Seed runner
+│   ├── seed-data.ts                  # Sample dataset
+│   └── migrations/001_init.sql       # PostgreSQL schema
+│
+├── package.json                      # Unified root dependencies & scripts
+├── tailwind.config.ts                # Design tokens & animation keyframes
+└── .env.example                      # Environment variables template
 ```
 
 ---
 
 ## Getting started
 
-**Prerequisites:** Node 20+, and a PostgreSQL 14+ database (local, or a free Supabase
-project).
+**Prerequisites:** Node 20+, and a PostgreSQL 14+ database (local, or a free Supabase project).
 
 ```bash
-# 1. backend
-cd backend
-cp .env.example .env          # then fill in DATABASE_URL
+# 1. Clone and install
 npm install
-npm run migrate               # create the schema
-npm run seed                  # load sample data
-npm run dev                   # http://localhost:4000
 
-# 2. frontend (in a second terminal)
-cd frontend
-cp .env.example .env.local
-npm install
-npm run dev                   # http://localhost:3000
+# 2. Environment configuration
+cp .env.example .env.local            # fill in your DATABASE_URL
+
+# 3. Database setup
+npm run migrate                       # create schema in PostgreSQL
+npm run seed                          # load sample data
+
+# 4. Run full-stack application
+npm run dev                           # http://localhost:3000
 ```
 
 Open http://localhost:3000.
 
-### Using Supabase as the database
+---
 
-1. Create a project at [supabase.com](https://supabase.com).
-2. **Project Settings → Database → Connection string → URI.** Use the *direct* connection
-   (port 5432) for a long-running Node process, or the *pooler* (port 6543) if you deploy
-   the API to a serverless host.
-3. Put it in `backend/.env` as `DATABASE_URL`, and set `DATABASE_SSL=true`.
-4. Run `npm run migrate && npm run seed`.
+## Deploying to Vercel (1-Click)
 
-If you would rather not point Node at the database, `npm run seed:sql > seed.sql` prints
-the whole seed as plain SQL you can paste into the Supabase SQL editor, alongside
-`backend/src/db/migrations/001_init.sql`.
+Because the project is unified into a single full-stack Next.js application, deploying to Vercel requires zero complex setup:
+
+1. Push your repository to GitHub.
+2. Go to [vercel.com](https://vercel.com) and click **"Add New Project"** → **Import** your repository.
+3. In **Environment Variables**, add:
+   - `DATABASE_URL` — your PostgreSQL connection string (from Supabase, Neon, or Railway)
+   - `DATABASE_SSL` — `true`
+4. Click **Deploy**. Vercel will build both the frontend and the serverless `/api` routes automatically!
 
 ---
 
 ## Environment variables
 
-**`backend/.env`**
+**`.env.local`**
 
 | Variable | Required | Notes |
 | --- | --- | --- |
 | `DATABASE_URL` | yes | Postgres connection string |
-| `DATABASE_SSL` | no | `true` for Supabase and most hosted Postgres |
-| `PORT` | no | defaults to `4000` |
-| `NODE_ENV` | no | `development` \| `production` |
-| `CORS_ORIGIN` | no | comma-separated list of allowed origins |
-
-**`frontend/.env.local`**
-
-| Variable | Required | Notes |
-| --- | --- | --- |
-| `NEXT_PUBLIC_API_URL` | yes | e.g. `http://localhost:4000/api` |
-| `NEXT_PUBLIC_BUSINESS_*` | no | name, address, GSTIN, phone, email printed on invoices |
-
-Nothing secret is exposed to the browser: the frontend has no database credential, and
-`.env` files are git-ignored. Only `*.example` files are committed.
+| `DATABASE_SSL` | no | `true` for Supabase and hosted Postgres |
+| `NEXT_PUBLIC_API_URL` | no | Defaults to `/api` for same-domain deployment |
+| `NEXT_PUBLIC_BUSINESS_NAME` | no | Shown on invoice document header |
+| `NEXT_PUBLIC_BUSINESS_GSTIN` | no | Shown on invoice document header |
 
 ---
 
 ## Database setup and migrations
 
-Migrations are plain `.sql` files applied in filename order, each inside a transaction,
-each recorded in `schema_migrations`.
+Migrations are plain `.sql` files applied in filename order, each inside a transaction, each recorded in `schema_migrations`.
 
 ```bash
 npm run migrate              # apply anything pending
@@ -225,24 +202,12 @@ npm run migrate -- --reset   # drop the schema and rebuild from scratch
 npm run db:reset             # reset + reseed in one step
 ```
 
-To add a migration, drop `002_something.sql` next to `001_init.sql`. Forward-only by
-design: rollback scripts that are never tested are worse than not having them.
-
 ---
 
 ## Seed data
 
-`npm run seed` loads a fictional electrical and hardware supplier in Howrah:
-
-- **8 customers** — Sharma Traders, Verma Hardware, Patel & Sons, Iyer Interiors,
-  Bose Construction, Khanna Electricals, Reddy Enterprises, and one deliberately inactive.
-- **17 items** across the 0 / 5 / 12 / 18 / 28 % GST slabs, including one inactive item and
-  two service lines (labour per point, AMC).
-- **14 invoices** spread over the last six months: **5 paid, 4 partially paid, 5 pending**,
-  totalling roughly ₹23,37,799 invoiced with about ₹13,01,663 still outstanding.
-
-Invoice dates are generated relative to today, so the dashboard's six-month trend is
-always populated no matter when you seed.
+`npm run seed` loads a realistic business dataset:
+- **8 customers**, **17 items**, and **14 invoices** with realistic payments and statuses.
 
 The seed prices every line using the *same* money helpers the API uses, so seeded invoices
 are arithmetically identical to invoices raised through the UI. A seed that quietly
