@@ -1,7 +1,6 @@
 import type { ApiFailure, ApiSuccess } from '@/types/api';
 
-const rawApiUrl = process.env.NEXT_PUBLIC_API_URL;
-const BASE_URL = (!rawApiUrl || rawApiUrl.includes('localhost:4000') ? '/api' : rawApiUrl).replace(/\/$/, '');
+const BASE_URL = (process.env.NEXT_PUBLIC_API_URL ?? '/api').replace(/\/$/, '');
 
 /**
  * The error the UI actually shows. `message` is already written for a
